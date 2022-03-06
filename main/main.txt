@@ -1,0 +1,97 @@
+#include "Tlc5940.h"
+#define MAX_BRIGHTNESS 4095
+#define MIN_BRIGHTNESS 0
+#define POWAN_SPEED 100
+#define strobe 2
+#define reset 5
+#define cout 0
+#define CHANNEL7 8
+
+TLC_CHANNEL_TYPE ch;
+char curCh;
+int curBr;
+const int vn[10] = {125,157,198,250,315,397,500,630,793,1000};
+
+void setup() {
+  Serial.begin(9600);
+  Tlc.init();
+  Tlc.clear();
+  pinMode(strobe,OUTPUT);
+  pinMode(reset,OUTPUT);
+  pinMode(CHANNEL7,OUTPUT);
+}
+
+void loop() {
+  digitalWrite(reset,HIGH);
+  delay(5);
+  digitalWrite(reset,LOW);
+  
+  for (int x = 0; x < 7; x++){
+    digitalWrite(strobe,LOW);
+    Tlc.clear();
+    delayMicroseconds(35);
+    int spectrumRead = analogRead(cout);
+
+    Serial.print(spectrumRead,x);
+    Serial.print(":");
+    Serial.println(spectrumRead);
+
+    LightBar(spectrumRead,x);
+    digitalWrite(strobe,HIGH);
+    delay(5);
+  }
+}
+
+void LightBar(int pmw,int i){
+  switch(i){
+    case 0:
+      Tlc.set(10,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+    case 1:
+      Tlc.set(11,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+     case 2:
+      Tlc.set(12,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+     case 3:
+      Tlc.set(13,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+     case 4:
+      Tlc.set(14,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+     case 5:
+      Tlc.set(15,MAX_BRIGHTNESS);
+      digitalWrite(CHANNEL7,LOW);
+      break;
+      
+     case 6:
+      digitalWrite(CHANNEL7,HIGH);
+      break;
+  }
+  int level = 10;
+  for (int t = 0; t < 10; t++){
+    if (vn[t] > pmw){
+      level = t - 1;
+      break;
+    }
+  }
+  for (ch = 0; ch < 10; ch++){
+    if (ch <= level){
+      Tlc.set(ch,MAX_BRIGHTNESS);
+    }else{
+      break;
+    }
+  }
+  Tlc.update();
+}
+ 
